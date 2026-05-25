@@ -1,0 +1,42 @@
+name: CI
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    quality:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+
+            - uses: ramsey/composer-install@v4
+
+            - name: Composer validate
+              run: composer validate
+
+            - name: PHPStan
+              run: composer analyse
+
+            - name: ECS
+              run: composer ecs:check
+
+    tests:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+
+            - uses: ramsey/composer-install@v4
+
+            - name: PHPUnit
+              run: composer test

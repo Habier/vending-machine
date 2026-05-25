@@ -1,0 +1,39 @@
+{
+    "name": "plop/vending-machine",
+    "description": "Framework-free PHP 8.4 vending machine challenge",
+    "type": "project",
+    "require": {
+        "php": "^8.4"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5",
+        "symplify/easy-coding-standard": "^12.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "VendingMachine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "VendingMachine\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml",
+        "analyse": "phpstan analyse --configuration phpstan.neon.dist",
+        "ecs:check": "ecs check --config ecs.php",
+        "ecs:fix": "ecs check --config ecs.php --fix",
+        "check": [
+            "@test",
+            "@analyse",
+            "@ecs:check"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
