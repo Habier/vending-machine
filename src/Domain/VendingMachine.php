@@ -33,6 +33,14 @@ final class VendingMachine
     }
 
     /**
+     * @return list<int>
+     */
+    public static function acceptedCoinDenominations(): array
+    {
+        return array_keys(self::ACCEPTED_COIN_DENOMINATIONS);
+    }
+
+    /**
      * Replaces the machine catalog and change reserve while preserving the current customer's inserted coins.
      */
     public function service(Catalog $catalog, Coins $availableChange): void

@@ -24,6 +24,10 @@ final class CommandProcessorTest extends TestCase
         $help = $processor->handle('HELP');
 
         self::assertStringContainsString('Commands:', $help);
+        self::assertStringContainsString('0.05', $help);
+        self::assertStringContainsString('0.10', $help);
+        self::assertStringContainsString('0.25', $help);
+        self::assertStringContainsString('1', $help);
         self::assertStringContainsString('GET-<PRODUCT>', $help);
         self::assertStringContainsString('GET-WATER', $help);
         self::assertStringContainsString('RETURN-COIN', $help);

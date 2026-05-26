@@ -18,13 +18,6 @@ use VendingMachine\Domain\VendingMachine;
 
 final class CommandProcessor
 {
-    private const COIN_COMMANDS = [
-        '0.05' => 5,
-        '0.10' => 10,
-        '0.25' => 25,
-        '1' => 100,
-    ];
-
     private bool $shouldExit = false;
 
     public function __construct(
@@ -35,19 +28,22 @@ final class CommandProcessor
 
     public function help(): string
     {
-        return implode(PHP_EOL, [
-            'Commands:',
-            '  0.05             Insert 5 cents',
-            '  0.10             Insert 10 cents',
-            '  0.25             Insert 25 cents',
-            '  1                Insert 100 cents',
+        $lines = ['Commands:'];
+
+        foreach ($this->coinCommands() as $command => $cents) {
+            $lines[] = sprintf('  %-16s Insert %d cents', $command, $cents);
+        }
+
+        $lines = [...$lines,
             '  GET-<PRODUCT>    Buy a catalog product, for example GET-WATER',
             '  RETURN-COIN      Return the exact inserted coins',
             '  SERVICE          Reset catalog and change reserve to the challenge setup',
             '  STATUS           Show inserted money, products, and change reserve',
             '  HELP             Show this help',
             '  EXIT             Exit the CLI',
-        ]);
+        ];
+
+        return implode(PHP_EOL, $lines);
     }
 
     public function shouldExit(): bool
@@ -63,8 +59,10 @@ final class CommandProcessor
             return 'Enter a command. Type "HELP" for usage.';
         }
 
-        if (isset(self::COIN_COMMANDS[$trimmedInput])) {
-            return $this->insertCoinValue(self::COIN_COMMANDS[$trimmedInput], $trimmedInput);
+        $coinCommands = $this->coinCommands();
+
+        if (isset($coinCommands[$trimmedInput])) {
+            return $this->insertCoinValue($coinCommands[$trimmedInput], $trimmedInput);
         }
 
         $parts = preg_split('/\s+/', $trimmedInput, -1, PREG_SPLIT_NO_EMPTY);
@@ -96,6 +94,20 @@ final class CommandProcessor
         $this->machine->service($defaultMachine->catalog(), $defaultMachine->availableChange());
 
         return 'Machine serviced with the challenge configuration.';
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function coinCommands(): array
+    {
+        $commands = [];
+
+        foreach (VendingMachine::acceptedCoinDenominations() as $cents) {
+            $commands[$this->formatCoinCommand($cents)] = $cents;
+        }
+
+        return $commands;
     }
 
     private function insertCoinValue(int $cents, string $displayValue): string
@@ -203,6 +215,15 @@ final class CommandProcessor
         );
 
         return implode(PHP_EOL, $lines);
+    }
+
+    private function formatCoinCommand(int $cents): string
+    {
+        if ($cents % 100 === 0) {
+            return (string) intdiv($cents, 100);
+        }
+
+        return number_format($cents / 100, 2, '.', '');
     }
 
     private function formatCoins(Coins $coins): string
