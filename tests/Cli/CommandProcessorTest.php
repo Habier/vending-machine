@@ -39,13 +39,13 @@ final class CommandProcessorTest extends TestCase
         self::assertSame('Unknown command "dance". Type "HELP" for usage.', $result);
     }
 
-    public function testInvalidInsertArgumentsReturnUsage(): void
+    public function testLegacyDeveloperStyleCommandsAreRejected(): void
     {
         $processor = $this->createProcessor();
 
-        $result = $processor->handle('insert nope');
-
-        self::assertSame('Usage: insert <cents>', $result);
+        self::assertSame('Unknown command "insert". Type "HELP" for usage.', $processor->handle('insert nope'));
+        self::assertSame('Unknown command "select". Type "HELP" for usage.', $processor->handle('select A1'));
+        self::assertSame('Unknown command "return-coins". Type "HELP" for usage.', $processor->handle('return-coins'));
     }
 
     public function testExitMarksProcessorForShutdown(): void
@@ -115,7 +115,7 @@ final class CommandProcessorTest extends TestCase
     {
         $processor = $this->createProcessor();
 
-        $processor->handle('insert 100');
+        $processor->handle('1');
         $processor->handle('SERVICE');
 
         $status = $processor->handle('STATUS');

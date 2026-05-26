@@ -1,25 +1,14 @@
 # Vending Machine
 
-Framework-free PHP 8.4 solution for the senior backend vending machine challenge. The focus is the domain model: machine state, product selection, coin handling, and exact-change rules.
+Framework-free PHP 8.4 solution to simulate a vending machine.
 
-The project is intended to be evaluated through Docker. No local PHP or Composer installation is required.
+## Quick Start
 
-## Quick path
-
-If the target machine only has Docker, this is the full happy path:
+Run the following commands to start the interactive CLI:
 
 ```bash
 docker compose run --rm php composer install
 docker compose run --rm php
-```
-
-The first command installs dependencies. The second starts the interactive vending machine CLI.
-`stdin_open` and `tty` are already enabled in `docker-compose.yml`, so `docker compose run --rm php` is the intended interactive evaluation path.
-
-If you want to run the full quality suite instead of the CLI:
-
-```bash
-docker compose run --rm php composer check
 ```
 
 ## Run commands
@@ -30,20 +19,6 @@ docker compose run --rm php composer analyse
 docker compose run --rm php composer ecs:check
 docker compose run --rm php composer ecs:fix
 docker compose run --rm php composer check
-```
-
-## CLI usage
-
-Run the interactive adapter from Docker with:
-
-```bash
-docker compose run --rm php
-```
-
-That service starts the CLI by default. If you prefer being explicit, this does the same thing:
-
-```bash
-docker compose run --rm php composer cli
 ```
 
 Available commands:
@@ -59,14 +34,19 @@ Available commands:
 - `HELP`
 - `EXIT`
 
-Legacy developer-style aliases are still accepted internally: `insert <cents>`, `select <code>`, and `return-coins`.
-
-Example session:
+Example sessions:
 
 ```text
 > STATUS
 > 1
 > GET-WATER
+> EXIT
+```
+
+```text
+> STATUS
+> 0.10
+> 0.10
 > RETURN-COIN
 > EXIT
 ```
@@ -80,14 +60,7 @@ docker compose run --rm php
 docker compose run --rm php composer check
 ```
 
-## Optional local commands
-
 If you already have PHP 8.4 and Composer locally, the same commands can also be run without Docker.
-
-```bash
-composer cli
-composer check
-```
 
 ## Architecture
 

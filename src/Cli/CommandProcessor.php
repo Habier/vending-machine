@@ -47,8 +47,6 @@ final class CommandProcessor
             '  STATUS           Show inserted money, products, and change reserve',
             '  HELP             Show this help',
             '  EXIT             Exit the CLI',
-            '',
-            'Aliases also supported: insert <cents>, select <code>, return-coins.',
         ]);
     }
 
@@ -86,9 +84,7 @@ final class CommandProcessor
             'HELP' => $this->help(),
             'STATUS' => $this->renderStatus(),
             'SERVICE' => $this->service(),
-            'INSERT' => $this->insert($parts),
-            'SELECT' => $this->select($parts),
-            'RETURN-COIN', 'RETURN-COINS' => $this->returnCoins(),
+            'RETURN-COIN' => $this->returnCoins(),
             'EXIT' => $this->exit(),
             default => sprintf('Unknown command "%s". Type "HELP" for usage.', $rawCommand),
         };
@@ -100,18 +96,6 @@ final class CommandProcessor
         $this->machine->service($defaultMachine->catalog(), $defaultMachine->availableChange());
 
         return 'Machine serviced with the challenge configuration.';
-    }
-
-    /**
-     * @param list<string> $parts
-     */
-    private function insert(array $parts): string
-    {
-        if (count($parts) !== 2 || filter_var($parts[1], FILTER_VALIDATE_INT) === false) {
-            return 'Usage: insert <cents>';
-        }
-
-        return $this->insertCoinValue((int) $parts[1], $parts[1]);
     }
 
     private function insertCoinValue(int $cents, string $displayValue): string
@@ -133,18 +117,6 @@ final class CommandProcessor
         }
 
         return sprintf('Rejected %s. Returned immediately.', $displayValue);
-    }
-
-    /**
-     * @param list<string> $parts
-     */
-    private function select(array $parts): string
-    {
-        if (count($parts) !== 2) {
-            return 'Usage: select <code>';
-        }
-
-        return $this->selectByCode($parts[1]);
     }
 
     private function selectByCode(string $code): string
