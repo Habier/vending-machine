@@ -111,7 +111,7 @@ This keeps the main behavior readable while still protecting dense logic and inv
 
 - Accepted denominations are fixed to the challenge specification instead of being configurable. I decided to avoid speculative flexibility in favor of simplicity
 - No persistence, since the challenge spec does not require it.
-- `ChangeReserve` currently stores reserve coins as a coin collection because the challenge scale is small and clarity is preferred. If reserve size or accounting complexity grew, its internal representation could evolve to denomination counts without changing the domain boundary.
+- `ChangeReserve` stores coins as a collection because the challenge scale is small and this stays clear and fast enough for hundreds of coins. If that changed, the internal representation could evolve without changing the domain boundary.
 
 ## Project structure
 
