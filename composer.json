@@ -21,6 +21,7 @@
         }
     },
     "scripts": {
+        "cli": "php bin/vending-machine",
         "test": "phpunit --configuration phpunit.xml",
         "analyse": "phpstan analyse --configuration phpstan.neon.dist",
         "ecs:check": "ecs check --config ecs.php",

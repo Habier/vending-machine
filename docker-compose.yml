@@ -5,4 +5,6 @@ services:
     working_dir: /app
     volumes:
       - ./:/app
-    command: php -v
+    stdin_open: true
+    tty: true
+    command: composer cli

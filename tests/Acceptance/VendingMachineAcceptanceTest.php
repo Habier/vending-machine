@@ -26,8 +26,9 @@ final class VendingMachineAcceptanceTest extends TestCase
         $machine = $this->createMachine();
         $machine->insertCoin(new Coin(100));
         $machine->insertCoin(new Coin(25));
+        $machine->insertCoin(new Coin(25));
 
-        $result = $machine->selectProduct(new ProductSelection('A1'));
+        $result = $machine->selectProduct(new ProductSelection('SODA'));
 
         self::assertInstanceOf(ProductVended::class, $result);
         self::assertSame('Soda', $result->product->name());
@@ -52,9 +53,8 @@ final class VendingMachineAcceptanceTest extends TestCase
     {
         $machine = $this->createMachine();
         $machine->insertCoin(new Coin(100));
-        $machine->insertCoin(new Coin(100));
 
-        $result = $machine->selectProduct(new ProductSelection('B1'));
+        $result = $machine->selectProduct(new ProductSelection('WATER'));
 
         self::assertInstanceOf(ProductVended::class, $result);
         self::assertSame('Water', $result->product->name());
@@ -67,10 +67,10 @@ final class VendingMachineAcceptanceTest extends TestCase
         $machine = $this->createMachine();
         $machine->insertCoin(new Coin(100));
 
-        $result = $machine->selectProduct(new ProductSelection('A1'));
+        $result = $machine->selectProduct(new ProductSelection('SODA'));
 
         self::assertInstanceOf(InsufficientFunds::class, $result);
-        self::assertSame(25, $result->missingAmount->cents());
+        self::assertSame(50, $result->missingAmount->cents());
         self::assertSame(100, $machine->insertedMoney()->cents());
         self::assertSame([100], $machine->returnCoins()->values());
     }
@@ -79,38 +79,38 @@ final class VendingMachineAcceptanceTest extends TestCase
     {
         $machine = $this->machineWith(
             [
-                $this->catalogEntry('A1', 'Soda', 125, 0),
+                $this->catalogEntry('SODA', 'Soda', 150, 0),
             ],
             Coins::fromCents(25, 10, 5),
         );
         $machine->insertCoin(new Coin(100));
         $machine->insertCoin(new Coin(25));
+        $machine->insertCoin(new Coin(25));
 
-        $result = $machine->selectProduct(new ProductSelection('A1'));
+        $result = $machine->selectProduct(new ProductSelection('SODA'));
 
         self::assertInstanceOf(OutOfStock::class, $result);
         self::assertSame('Soda', $result->product->name());
-        self::assertSame(125, $machine->insertedMoney()->cents());
-        self::assertSame([100, 25], $machine->returnCoins()->values());
+        self::assertSame(150, $machine->insertedMoney()->cents());
+        self::assertSame([100, 25, 25], $machine->returnCoins()->values());
     }
 
     public function testExactChangeUnavailableReturnsFailureAndPreservesMoney(): void
     {
         $machine = $this->machineWith(
             [
-                $this->catalogEntry('A1', 'Soda', 120, 5),
+                $this->catalogEntry('WATER', 'Water', 65, 5),
             ],
-            Coins::fromCents(10),
+            Coins::fromCents(25, 5),
         );
         $machine->insertCoin(new Coin(100));
-        $machine->insertCoin(new Coin(25));
 
-        $result = $machine->selectProduct(new ProductSelection('A1'));
+        $result = $machine->selectProduct(new ProductSelection('WATER'));
 
         self::assertInstanceOf(ExactChangeUnavailable::class, $result);
-        self::assertSame('Soda', $result->product->name());
-        self::assertSame(125, $machine->insertedMoney()->cents());
-        self::assertSame([100, 25], $machine->returnCoins()->values());
+        self::assertSame('Water', $result->product->name());
+        self::assertSame(100, $machine->insertedMoney()->cents());
+        self::assertSame([100], $machine->returnCoins()->values());
     }
 
     public function testUnknownProductSelectionReturnsExpectedResult(): void
@@ -141,17 +141,17 @@ final class VendingMachineAcceptanceTest extends TestCase
 
         $machine->service(
             new Catalog([
-                $this->catalogEntry('A1', 'Sparkling Water', 100, 3),
+                $this->catalogEntry('SPARKLING-WATER', 'Sparkling Water', 100, 3),
             ]),
             Coins::empty(),
         );
 
         self::assertSame(100, $machine->insertedMoney()->cents());
-        self::assertInstanceOf(UnknownProductSelection::class, $machine->selectProduct(new ProductSelection('B1')));
+        self::assertInstanceOf(UnknownProductSelection::class, $machine->selectProduct(new ProductSelection('WATER')));
 
         $machine->insertCoin(new Coin(25));
 
-        $result = $machine->selectProduct(new ProductSelection('A1'));
+        $result = $machine->selectProduct(new ProductSelection('SPARKLING-WATER'));
 
         self::assertInstanceOf(ExactChangeUnavailable::class, $result);
         self::assertSame('Sparkling Water', $result->product->name());
@@ -163,10 +163,11 @@ final class VendingMachineAcceptanceTest extends TestCase
     {
         return $this->machineWith(
             [
-                $this->catalogEntry('A1', 'Soda', 125, 5),
-                $this->catalogEntry('B1', 'Water', 165, 5),
+                $this->catalogEntry('WATER', 'Water', 65, 5),
+                $this->catalogEntry('JUICE', 'Juice', 100, 5),
+                $this->catalogEntry('SODA', 'Soda', 150, 5),
             ],
-            Coins::fromCents(100, 50, 25, 25, 10, 10, 5),
+            Coins::fromCents(100, 25, 25, 10, 10, 5),
         );
     }
 

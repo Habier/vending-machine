@@ -38,6 +38,14 @@ final readonly class Catalog
         return $this->entries[$selection->code()] ?? null;
     }
 
+    /**
+     * @return list<CatalogEntry>
+     */
+    public function entries(): array
+    {
+        return array_values($this->entries);
+    }
+
     public function upsertEntry(CatalogEntry $entry): self
     {
         $entries = $this->entries;

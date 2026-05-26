@@ -65,6 +65,16 @@ final class VendingMachine
         return $this->insertedCoins->sum();
     }
 
+    public function catalog(): Catalog
+    {
+        return $this->catalog;
+    }
+
+    public function availableChange(): Coins
+    {
+        return $this->availableChange;
+    }
+
     /**
      * Attempts to vend the selected product.
      *

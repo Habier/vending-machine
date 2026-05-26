@@ -2,33 +2,73 @@
 
 Framework-free PHP 8.4 solution for the senior backend vending machine challenge. The focus is the domain model: machine state, product selection, coin handling, and exact-change rules.
 
+The project is intended to be evaluated through Docker. No local PHP or Composer installation is required.
+
 ## Quick path
 
-1. Install dependencies:
+If the target machine only has Docker, this is the full happy path:
 
 ```bash
-composer install
+docker compose run --rm php composer install
+docker compose run --rm php
 ```
 
-2. Run the full quality suite:
+The first command installs dependencies. The second starts the interactive vending machine CLI.
+`stdin_open` and `tty` are already enabled in `docker-compose.yml`, so `docker compose run --rm php` is the intended interactive evaluation path.
+
+If you want to run the full quality suite instead of the CLI:
 
 ```bash
-composer check
-```
-
-3. If you want formatting fixes applied automatically:
-
-```bash
-composer ecs:fix
+docker compose run --rm php composer check
 ```
 
 ## Run commands
 
 ```bash
-composer test
-composer analyse
-composer ecs:check
-composer check
+docker compose run --rm php composer test
+docker compose run --rm php composer analyse
+docker compose run --rm php composer ecs:check
+docker compose run --rm php composer ecs:fix
+docker compose run --rm php composer check
+```
+
+## CLI usage
+
+Run the interactive adapter from Docker with:
+
+```bash
+docker compose run --rm php
+```
+
+That service starts the CLI by default. If you prefer being explicit, this does the same thing:
+
+```bash
+docker compose run --rm php composer cli
+```
+
+Available commands:
+
+- `0.05`
+- `0.10`
+- `0.25`
+- `1`
+- `GET-<PRODUCT-NAME>` such as `GET-WATER`, `GET-JUICE`, `GET-SODA`, or `GET-SPARKLING-WATER` when that product exists in the current catalog
+- `RETURN-COIN`
+- `SERVICE` resets the catalog and change reserve to the challenge setup while preserving currently inserted money
+- `STATUS`
+- `HELP`
+- `EXIT`
+
+Legacy developer-style aliases are still accepted internally: `insert <cents>`, `select <code>`, and `return-coins`.
+
+Example session:
+
+```text
+> STATUS
+> 1
+> GET-WATER
+> RETURN-COIN
+> EXIT
 ```
 
 ## Docker
@@ -36,7 +76,17 @@ composer check
 ```bash
 docker build -t vending-machine .
 docker compose run --rm php composer install
+docker compose run --rm php
 docker compose run --rm php composer check
+```
+
+## Optional local commands
+
+If you already have PHP 8.4 and Composer locally, the same commands can also be run without Docker.
+
+```bash
+composer cli
+composer check
 ```
 
 ## Architecture
@@ -47,7 +97,7 @@ The solution is intentionally small and centered on the domain.
 |------|----------|
 | Core model | `VendingMachine` is the main domain object and owns machine state transitions. |
 | Money | All money is modeled in integer cents. No floats are used in the domain. |
-| Products | Products are dynamic and identified by a `ProductSelection` value object instead of enums. |
+| Products | Products are dynamic and identified by a `ProductSelection` value object instead of enums. The default challenge catalog is Water 65c, Juice 100c, Soda 150c. |
 | Buy outcomes | Expected business outcomes return explicit result objects instead of exceptions. |
 | Coin handling | `Coin` represents a physical coin value; the machine decides which denominations it accepts. |
 | Change | Change comes only from the machine reserve, never from coins inserted in the current purchase. |
@@ -61,7 +111,7 @@ Important rules in this implementation:
 - accepted denominations are fixed to `5`, `10`, `25`, and `100` cents, following the challenge spec
 - invalid coins are rejected immediately and returned
 - `Return Coin` returns the exact inserted coins
-- `SERVICE` replaces the catalog and machine change reserve, while preserving currently inserted money
+- `SERVICE` replaces the catalog and machine change reserve with the challenge catalog, while preserving currently inserted money
 - if funds are insufficient, stock is empty, or exact change cannot be returned, the machine does not vend and the inserted money is preserved
 
 ## Testing strategy

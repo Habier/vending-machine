@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use VendingMachine\Cli\Application;
+use VendingMachine\Cli\CommandProcessor;
+use VendingMachine\Cli\DefaultMachineFactory;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$factory = new DefaultMachineFactory();
+$machine = $factory->create();
+$commandProcessor = new CommandProcessor($machine, $factory);
+$application = new Application($commandProcessor);
+
+exit($application->run(STDIN, STDOUT));
