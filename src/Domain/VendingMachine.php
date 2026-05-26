@@ -32,6 +32,9 @@ final class VendingMachine
         $this->insertedCoins = Coins::empty();
     }
 
+    /**
+     * Replaces the machine catalog and change reserve while preserving the current customer's inserted coins.
+     */
     public function service(Catalog $catalog, Coins $availableChange): void
     {
         $this->catalog = $catalog;
@@ -62,6 +65,11 @@ final class VendingMachine
         return $this->insertedCoins->sum();
     }
 
+    /**
+     * Attempts to vend the selected product.
+     *
+     * Expected business failures are returned as explicit result objects rather than thrown as exceptions.
+     */
     public function selectProduct(ProductSelection $selection): ProductSelectionResult
     {
         $entry = $this->catalog->find($selection);
