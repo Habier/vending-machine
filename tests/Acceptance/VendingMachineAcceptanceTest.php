@@ -77,13 +77,10 @@ final class VendingMachineAcceptanceTest extends TestCase
 
     public function testOutOfStockReturnsFailureAndPreservesMoney(): void
     {
-        $machine = new VendingMachine(
-            new Catalog([
-                new CatalogEntry(
-                    new Product(new ProductSelection('A1'), 'Soda', new Money(125)),
-                    0,
-                ),
-            ]),
+        $machine = $this->machineWith(
+            [
+                $this->catalogEntry('A1', 'Soda', 125, 0),
+            ],
             Coins::fromCents(25, 10, 5),
         );
         $machine->insertCoin(new Coin(100));
@@ -99,13 +96,10 @@ final class VendingMachineAcceptanceTest extends TestCase
 
     public function testExactChangeUnavailableReturnsFailureAndPreservesMoney(): void
     {
-        $machine = new VendingMachine(
-            new Catalog([
-                new CatalogEntry(
-                    new Product(new ProductSelection('A1'), 'Soda', new Money(120)),
-                    5,
-                ),
-            ]),
+        $machine = $this->machineWith(
+            [
+                $this->catalogEntry('A1', 'Soda', 120, 5),
+            ],
             Coins::fromCents(10),
         );
         $machine->insertCoin(new Coin(100));
@@ -147,10 +141,7 @@ final class VendingMachineAcceptanceTest extends TestCase
 
         $machine->service(
             new Catalog([
-                new CatalogEntry(
-                    new Product(new ProductSelection('A1'), 'Sparkling Water', new Money(100)),
-                    3,
-                ),
+                $this->catalogEntry('A1', 'Sparkling Water', 100, 3),
             ]),
             Coins::empty(),
         );
@@ -170,18 +161,28 @@ final class VendingMachineAcceptanceTest extends TestCase
 
     private function createMachine(): VendingMachine
     {
-        return new VendingMachine(
-            new Catalog([
-                new CatalogEntry(
-                    new Product(new ProductSelection('A1'), 'Soda', new Money(125)),
-                    5,
-                ),
-                new CatalogEntry(
-                    new Product(new ProductSelection('B1'), 'Water', new Money(165)),
-                    5,
-                ),
-            ]),
+        return $this->machineWith(
+            [
+                $this->catalogEntry('A1', 'Soda', 125, 5),
+                $this->catalogEntry('B1', 'Water', 165, 5),
+            ],
             Coins::fromCents(100, 50, 25, 25, 10, 10, 5),
+        );
+    }
+
+    /**
+     * @param list<CatalogEntry> $entries
+     */
+    private function machineWith(array $entries, Coins $availableChange): VendingMachine
+    {
+        return new VendingMachine(new Catalog($entries), $availableChange);
+    }
+
+    private function catalogEntry(string $selection, string $name, int $priceInCents, int $stock): CatalogEntry
+    {
+        return new CatalogEntry(
+            new Product(new ProductSelection($selection), $name, new Money($priceInCents)),
+            $stock,
         );
     }
 }
