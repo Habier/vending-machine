@@ -8,7 +8,7 @@ First vertical slice rules:
 | Products | Products are dynamic. No enums. Product identity is a selection code string wrapped in a value object. |
 | Challenge catalog | The default reviewer-facing catalog is Water `65`, Juice `100`, Soda `150` cents. |
 | Money | Money uses integer cents only. No floats anywhere in the domain. |
-| Coins | Coins are modeled as domain objects and collections, not raw arrays. |
+| Coins | `Coins` is the generic coin collection; `ChangeReserve` wraps the machine's available change pool. |
 | Accepted denominations | The machine accepts only `5`, `10`, `25`, and `100` cent coins. |
 | Service mode | `service()` replaces catalog and machine change reserve, but preserves currently inserted coins. |
 | Invalid coins | Invalid coins are rejected immediately and returned on the spot through `InsertCoinResult`. |

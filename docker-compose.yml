@@ -1,10 +1,8 @@
 services:
   php:
+    image: habier/vending-machine
     build:
       context: .
-    working_dir: /app
-    volumes:
-      - ./:/app
     stdin_open: true
     tty: true
     command: composer cli
