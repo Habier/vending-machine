@@ -4,21 +4,21 @@ Framework-free PHP 8.4 solution to simulate a vending machine.
 
 ## Quick Start
 
-Run the following commands to start the interactive CLI:
+Build the reviewer image and start the interactive CLI:
 
 ```bash
-docker compose run --rm php composer install
-docker compose run --rm php
+docker build -t habier/vending-machine .
+docker run --rm -it habier/vending-machine
 ```
 
 ## Run commands
 
 ```bash
-docker compose run --rm php composer test
-docker compose run --rm php composer analyse
-docker compose run --rm php composer ecs:check
-docker compose run --rm php composer ecs:fix
-docker compose run --rm php composer check
+docker run --rm habier/vending-machine composer test
+docker run --rm habier/vending-machine composer analyse
+docker run --rm habier/vending-machine composer ecs:check
+docker run --rm habier/vending-machine composer ecs:fix
+docker run --rm habier/vending-machine composer check
 ```
 
 Available commands:
@@ -27,7 +27,7 @@ Available commands:
 - `0.10`
 - `0.25`
 - `1`
-- `GET-<PRODUCT-NAME>` such as `GET-WATER`, `GET-JUICE`, `GET-SODA`, or `GET-SPARKLING-WATER` when that product exists in the current catalog
+- `GET-<PRODUCT-NAME>` such as `GET-WATER`, `GET-JUICE` or `GET-SODA`
 - `RETURN-COIN`
 - `SERVICE` resets the catalog and change reserve to the challenge setup while preserving currently inserted money
 - `STATUS`
@@ -53,9 +53,20 @@ Example sessions:
 
 ## Docker
 
+Primary reviewer artifact:
+
 ```bash
-docker build -t vending-machine .
-docker compose run --rm php composer install
+docker build -t habier/vending-machine .
+docker run --rm -it habier/vending-machine
+docker run --rm habier/vending-machine composer check
+```
+
+The image is self-contained: it installs Composer dependencies during `docker build` and copies the application source into the image, so reviewers do not need a bind mount or a separate `composer install` step.
+
+Docker Compose remains available as a convenience wrapper around the same image:
+
+```bash
+docker compose build
 docker compose run --rm php
 docker compose run --rm php composer check
 ```
@@ -72,7 +83,7 @@ The solution is intentionally small and centered on the domain.
 | Money | All money is modeled in integer cents. No floats are used in the domain. |
 | Products | Products are dynamic and identified by a `ProductSelection` value object instead of enums. The default challenge catalog is Water 65c, Juice 100c, Soda 150c. |
 | Buy outcomes | Expected business outcomes return explicit result objects instead of exceptions. |
-| Coin handling | `Coin` represents a physical coin value; the machine decides which denominations it accepts. |
+| Coin handling | `Coin` represents a physical coin value, `Coins` remains the generic collection, and `ChangeReserve` names the machine's available change pool. |
 | Change | Change comes only from the machine reserve, never from coins inserted in the current purchase. |
 
 ## Domain rules and assumptions
@@ -98,9 +109,9 @@ This keeps the main behavior readable while still protecting dense logic and inv
 
 ## Tradeoffs
 
-- Accepted denominations are fixed to the challenge specification instead of being configurable. This keeps the first version aligned with the problem statement and avoids speculative flexibility.
-- No framework, database, or HTTP layer is included yet. The submission optimizes for domain clarity over delivery mechanism.
-- `SERVICE` is kept close to the challenge wording even though a name like `reconfigure()` could be more explicit.
+- Accepted denominations are fixed to the challenge specification instead of being configurable. I decided to avoid speculative flexibility in favor of simplicity
+- No persistence, since the challenge spec does not require it.
+- `ChangeReserve` currently stores reserve coins as a coin collection because the challenge scale is small and clarity is preferred. If reserve size or accounting complexity grew, its internal representation could evolve to denomination counts without changing the domain boundary.
 
 ## Project structure
 
@@ -110,12 +121,3 @@ tests/Acceptance/
 tests/Domain/
 docs/domain-assumptions.md
 ```
-
-## Review path
-
-If you are reviewing the submission, the fastest order is:
-
-1. `docs/domain-assumptions.md`
-2. `src/Domain/VendingMachine.php`
-3. `tests/Acceptance/VendingMachineAcceptanceTest.php`
-4. `tests/Domain/`
