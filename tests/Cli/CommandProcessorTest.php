@@ -9,7 +9,7 @@ use VendingMachine\Cli\CommandProcessor;
 use VendingMachine\Cli\DefaultMachineFactory;
 use VendingMachine\Domain\Catalog;
 use VendingMachine\Domain\CatalogEntry;
-use VendingMachine\Domain\Coins;
+use VendingMachine\Domain\ChangeReserve;
 use VendingMachine\Domain\Money;
 use VendingMachine\Domain\Product;
 use VendingMachine\Domain\ProductSelection;
@@ -153,7 +153,7 @@ final class CommandProcessorTest extends TestCase
      */
     private function machineWith(array $entries): VendingMachine
     {
-        return new VendingMachine(new Catalog($entries), Coins::fromCents(100, 25, 25, 10, 10, 5));
+        return new VendingMachine(new Catalog($entries), ChangeReserve::fromCents(100, 25, 25, 10, 10, 5));
     }
 
     private function catalogEntry(string $selection, string $name, int $priceInCents, int $stock): CatalogEntry

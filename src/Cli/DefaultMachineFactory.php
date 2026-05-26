@@ -6,7 +6,7 @@ namespace VendingMachine\Cli;
 
 use VendingMachine\Domain\Catalog;
 use VendingMachine\Domain\CatalogEntry;
-use VendingMachine\Domain\Coins;
+use VendingMachine\Domain\ChangeReserve;
 use VendingMachine\Domain\Money;
 use VendingMachine\Domain\Product;
 use VendingMachine\Domain\ProductSelection;
@@ -22,7 +22,7 @@ final class DefaultMachineFactory
                 $this->catalogEntry('JUICE', 'Juice', 100, 5),
                 $this->catalogEntry('SODA', 'Soda', 150, 5),
             ]),
-            Coins::fromCents(100, 25, 25, 10, 10, 5),
+            ChangeReserve::fromCents(100, 25, 25, 10, 10, 5),
         );
     }
 

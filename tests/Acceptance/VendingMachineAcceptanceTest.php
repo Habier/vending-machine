@@ -7,6 +7,7 @@ namespace VendingMachine\Tests\Acceptance;
 use PHPUnit\Framework\TestCase;
 use VendingMachine\Domain\Catalog;
 use VendingMachine\Domain\CatalogEntry;
+use VendingMachine\Domain\ChangeReserve;
 use VendingMachine\Domain\Coin;
 use VendingMachine\Domain\Coins;
 use VendingMachine\Domain\Money;
@@ -81,7 +82,7 @@ final class VendingMachineAcceptanceTest extends TestCase
             [
                 $this->catalogEntry('SODA', 'Soda', 150, 0),
             ],
-            Coins::fromCents(25, 10, 5),
+            ChangeReserve::fromCents(25, 10, 5),
         );
         $machine->insertCoin(new Coin(100));
         $machine->insertCoin(new Coin(25));
@@ -101,7 +102,7 @@ final class VendingMachineAcceptanceTest extends TestCase
             [
                 $this->catalogEntry('WATER', 'Water', 65, 5),
             ],
-            Coins::fromCents(25, 5),
+            ChangeReserve::fromCents(25, 5),
         );
         $machine->insertCoin(new Coin(100));
 
@@ -143,7 +144,7 @@ final class VendingMachineAcceptanceTest extends TestCase
             new Catalog([
                 $this->catalogEntry('SPARKLING-WATER', 'Sparkling Water', 100, 3),
             ]),
-            Coins::empty(),
+            ChangeReserve::empty(),
         );
 
         self::assertSame(100, $machine->insertedMoney()->cents());
@@ -167,14 +168,14 @@ final class VendingMachineAcceptanceTest extends TestCase
                 $this->catalogEntry('JUICE', 'Juice', 100, 5),
                 $this->catalogEntry('SODA', 'Soda', 150, 5),
             ],
-            Coins::fromCents(100, 25, 25, 10, 10, 5),
+            ChangeReserve::fromCents(100, 25, 25, 10, 10, 5),
         );
     }
 
     /**
      * @param list<CatalogEntry> $entries
      */
-    private function machineWith(array $entries, Coins $availableChange): VendingMachine
+    private function machineWith(array $entries, ChangeReserve $availableChange): VendingMachine
     {
         return new VendingMachine(new Catalog($entries), $availableChange);
     }

@@ -7,8 +7,8 @@ namespace VendingMachine\Tests\Domain;
 use PHPUnit\Framework\TestCase;
 use VendingMachine\Domain\Catalog;
 use VendingMachine\Domain\CatalogEntry;
+use VendingMachine\Domain\ChangeReserve;
 use VendingMachine\Domain\Coin;
-use VendingMachine\Domain\Coins;
 use VendingMachine\Domain\Money;
 use VendingMachine\Domain\Product;
 use VendingMachine\Domain\ProductSelection;
@@ -63,7 +63,7 @@ final class VendingMachineChangeCalculationTest extends TestCase
                     5,
                 ),
             ]),
-            Coins::fromCents(...$change),
+            ChangeReserve::fromCents(...$change),
         );
     }
 }

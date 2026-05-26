@@ -27,7 +27,7 @@ final class VendingMachine
 
     public function __construct(
         private Catalog $catalog,
-        private Coins $availableChange,
+        private ChangeReserve $availableChange,
     ) {
         $this->insertedCoins = Coins::empty();
     }
@@ -43,7 +43,7 @@ final class VendingMachine
     /**
      * Replaces the machine catalog and change reserve while preserving the current customer's inserted coins.
      */
-    public function service(Catalog $catalog, Coins $availableChange): void
+    public function service(Catalog $catalog, ChangeReserve $availableChange): void
     {
         $this->catalog = $catalog;
         $this->availableChange = $availableChange;
@@ -78,7 +78,7 @@ final class VendingMachine
         return $this->catalog;
     }
 
-    public function availableChange(): Coins
+    public function availableChange(): ChangeReserve
     {
         return $this->availableChange;
     }
@@ -130,7 +130,7 @@ final class VendingMachine
         }
 
         $plannedCoins = $this->determineChangeCoins(
-            $this->availableChange->sortedDescending()->all(),
+            $this->availableChange->sortedCoinsDescending()->all(),
             $changeAmount->cents(),
             0,
         );

@@ -210,8 +210,8 @@ final class CommandProcessor
 
         $lines[] = sprintf(
             'Change reserve: %s (total %dc)',
-            $this->formatCoins($this->machine->availableChange()),
-            $this->machine->availableChange()->sum()->cents(),
+            $this->formatCoins($this->machine->availableChange()->coins()),
+            $this->machine->availableChange()->total()->cents(),
         );
 
         return implode(PHP_EOL, $lines);
