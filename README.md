@@ -11,17 +11,7 @@ docker build -t habier/vending-machine .
 docker run --rm -it habier/vending-machine
 ```
 
-## Run commands
-
-```bash
-docker run --rm habier/vending-machine composer test
-docker run --rm habier/vending-machine composer analyse
-docker run --rm habier/vending-machine composer ecs:check
-docker run --rm habier/vending-machine composer ecs:fix
-docker run --rm habier/vending-machine composer check
-```
-
-Available commands:
+## Available commands:
 
 - `0.05`
 - `0.10`
@@ -87,24 +77,22 @@ Service flow rules:
 - product prices are parsed in the CLI and stored in the domain as integer cents
 
 ## Docker
-
-Primary reviewer artifact:
-
-```bash
-docker build -t habier/vending-machine .
-docker run --rm -it habier/vending-machine
-docker run --rm habier/vending-machine composer check
-```
-
 The image is self-contained: it installs Composer dependencies during `docker build` and copies the application source into the image, so reviewers do not need a bind mount or a separate `composer install` step.
 
 Docker Compose remains available as a convenience wrapper around the same image:
 
+
+## Run commands
+
 ```bash
-docker compose build
-docker compose run --rm php
-docker compose run --rm php composer check
+docker run --rm habier/vending-machine composer test
+docker run --rm habier/vending-machine composer analyse
+docker run --rm habier/vending-machine composer ecs:check
+docker run --rm habier/vending-machine composer ecs:fix
+docker run --rm habier/vending-machine composer check
 ```
+
+
 
 If you already have PHP 8.4 and Composer locally, the same commands can also be run without Docker.
 
@@ -139,8 +127,9 @@ The test suite is split by intent:
 
 - **Acceptance tests** cover end-to-end business scenarios such as buying products, returning coins, invalid coin rejection, service behavior, and failure flows.
 - **Domain tests** cover invariants and tricky change-calculation paths directly.
+- **CLI tests** cover command parsing, dynamic product resolution, and interactive `SERVICE` validation behavior.
 
-This keeps the main behavior readable while still protecting dense logic and invariants.
+This keeps the main behavior readable while still protecting dense logic, adapter behavior, and domain invariants.
 
 ## Tradeoffs
 
@@ -148,11 +137,3 @@ This keeps the main behavior readable while still protecting dense logic and inv
 - No persistence, since the challenge spec does not require it.
 - `ChangeReserve` stores coins as a collection because the challenge scale is small and this stays clear and fast enough for hundreds of coins. If that changed, the internal representation could evolve without changing the domain boundary.
 
-## Project structure
-
-```text
-src/Domain/
-tests/Acceptance/
-tests/Domain/
-docs/domain-assumptions.md
-```
