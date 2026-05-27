@@ -11,7 +11,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $factory = new DefaultMachineFactory();
 $machine = $factory->create();
-$commandProcessor = new CommandProcessor($machine, $factory);
+$commandProcessor = new CommandProcessor($machine);
 $application = new Application($commandProcessor);
 
 exit($application->run(STDIN, STDOUT));

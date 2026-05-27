@@ -29,10 +29,12 @@ Available commands:
 - `1`
 - `GET-<PRODUCT-NAME>` such as `GET-WATER`, `GET-JUICE` or `GET-SODA`
 - `RETURN-COIN`
-- `SERVICE` resets the catalog and change reserve to the challenge setup while preserving currently inserted money
+- `SERVICE` starts an interactive service flow to replace the change reserve and product catalog while preserving currently inserted money
 - `STATUS`
 - `HELP`
 - `EXIT`
+
+During `SERVICE`, omitted coin denominations are treated as zero and omitted products are removed because the configuration replaces the full machine setup.
 
 Example sessions:
 
@@ -50,6 +52,39 @@ Example sessions:
 > RETURN-COIN
 > EXIT
 ```
+
+Short interactive `SERVICE` session:
+
+```text
+> SERVICE
+SERVICE mode.
+Enter change reserve as denomination:quantity pairs, comma-separated.
+Example: 1:33,0.25:66,0.10:22,0.05:44
+Change reserve:
+
+> 1:2,0.25:1,0.10:3,0.05:4
+Change reserve saved.
+Enter products one per line as name|price|stock.
+Example: Water|0.65|5
+Type DONE when finished.
+
+> Water|0.65|5
+Added Water at 65c with stock 5. Enter another product or DONE.
+
+> Juice|1|3
+Added Juice at 100c with stock 3. Enter another product or DONE.
+
+> DONE
+Machine serviced. Loaded 2 products. Change reserve total: 275c.
+```
+
+Service flow rules:
+
+- change reserve input uses `denomination:quantity`, comma-separated, and only accepts `0.05`, `0.10`, `0.25`, and `1`
+- products are entered one per line as `name|price|stock`
+- finish product entry with `DONE`
+- duplicate product names are rejected after `trim` and case-insensitive normalization, so `Water`, ` water `, and `WATER` are treated as the same product
+- product prices are parsed in the CLI and stored in the domain as integer cents
 
 ## Docker
 
@@ -95,7 +130,7 @@ Important rules in this implementation:
 - accepted denominations are fixed to `5`, `10`, `25`, and `100` cents, following the challenge spec
 - invalid coins are rejected immediately and returned
 - `Return Coin` returns the exact inserted coins
-- `SERVICE` replaces the catalog and machine change reserve with the challenge catalog, while preserving currently inserted money
+- `SERVICE` replaces the catalog and machine change reserve from interactive service input, while preserving currently inserted money
 - if funds are insufficient, stock is empty, or exact change cannot be returned, the machine does not vend and the inserted money is preserved
 
 ## Testing strategy

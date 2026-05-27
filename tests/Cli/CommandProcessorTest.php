@@ -6,7 +6,6 @@ namespace VendingMachine\Tests\Cli;
 
 use PHPUnit\Framework\TestCase;
 use VendingMachine\Cli\CommandProcessor;
-use VendingMachine\Cli\DefaultMachineFactory;
 use VendingMachine\Domain\Catalog;
 use VendingMachine\Domain\CatalogEntry;
 use VendingMachine\Domain\ChangeReserve;
@@ -30,6 +29,7 @@ final class CommandProcessorTest extends TestCase
         self::assertStringContainsString('1', $help);
         self::assertStringContainsString('GET-<PRODUCT>', $help);
         self::assertStringContainsString('GET-WATER', $help);
+        self::assertStringContainsString('Reconfigure change reserve and products interactively', $help);
         self::assertStringContainsString('RETURN-COIN', $help);
         self::assertStringContainsString('EXIT', $help);
     }
@@ -115,20 +115,68 @@ final class CommandProcessorTest extends TestCase
         self::assertSame('Accepted 0.05. Inserted total: 40c.', $processor->handle('0.05'));
     }
 
-    public function testServiceResetsCatalogAndReserveWhilePreservingInsertedMoneyInStatus(): void
+    public function testServiceConfiguresReserveAndProductsWhilePreservingInsertedMoneyInStatus(): void
     {
         $processor = $this->createProcessor();
 
         $processor->handle('1');
-        $processor->handle('SERVICE');
+        self::assertStringContainsString('SERVICE mode.', $processor->handle('SERVICE'));
+        self::assertStringContainsString('Change reserve saved.', $processor->handle('1:2,0.25:1,0.10:3,0.05:4'));
+        self::assertSame('Added Tea at 75c with stock 6. Enter another product or DONE.', $processor->handle('Tea|0.75|6'));
+        self::assertSame('Added Chips at 125c with stock 2. Enter another product or DONE.', $processor->handle('Chips|1.25|2'));
+        self::assertSame('Machine serviced. Loaded 2 products. Change reserve total: 275c.', $processor->handle('DONE'));
 
         $status = $processor->handle('STATUS');
 
         self::assertStringContainsString('Inserted: 100c', $status);
-        self::assertStringContainsString('GET-WATER  Water  65c  stock=5', $status);
-        self::assertStringContainsString('GET-JUICE  Juice  100c  stock=5', $status);
-        self::assertStringContainsString('GET-SODA  Soda  150c  stock=5', $status);
-        self::assertStringContainsString('Change reserve: 100c, 25c, 25c, 10c, 10c, 5c (total 175c)', $status);
+        self::assertStringContainsString('GET-TEA  Tea  75c  stock=6', $status);
+        self::assertStringContainsString('GET-CHIPS  Chips  125c  stock=2', $status);
+        self::assertStringContainsString('Change reserve: 100c, 100c, 25c, 10c, 10c, 10c, 5c, 5c, 5c, 5c (total 275c)', $status);
+    }
+
+    public function testServiceRejectsDuplicateProductNamesAfterTrimAndCaseNormalization(): void
+    {
+        $processor = $this->createProcessor();
+
+        $processor->handle('SERVICE');
+        $processor->handle('1:1,0.25:1,0.10:1,0.05:1');
+
+        self::assertSame('Added Water at 65c with stock 5. Enter another product or DONE.', $processor->handle('Water|0.65|5'));
+        self::assertSame('Duplicate product name "water".', $processor->handle(' water |1.00|1'));
+    }
+
+    public function testServiceRejectsUnsupportedReserveDenominations(): void
+    {
+        $processor = $this->createProcessor();
+
+        $processor->handle('SERVICE');
+
+        self::assertSame('Unsupported reserve denomination "0.50".', $processor->handle('0.50:2'));
+    }
+
+    public function testServiceRejectsMalformedReserveInput(): void
+    {
+        $processor = $this->createProcessor();
+
+        $processor->handle('SERVICE');
+
+        self::assertSame(
+            'Invalid reserve pair "1". Use denomination:quantity.',
+            $processor->handle('1'),
+        );
+    }
+
+    public function testServiceRejectsMalformedProductLine(): void
+    {
+        $processor = $this->createProcessor();
+
+        $processor->handle('SERVICE');
+        $processor->handle('1:1,0.25:1,0.10:1,0.05:1');
+
+        self::assertSame(
+            'Invalid product "Water|0.65". Use name|price|stock.',
+            $processor->handle('Water|0.65'),
+        );
     }
 
     public function testReturnCoinUsesChallengeCommandName(): void
@@ -143,9 +191,16 @@ final class CommandProcessorTest extends TestCase
 
     private function createProcessor(?VendingMachine $machine = null): CommandProcessor
     {
-        $factory = new DefaultMachineFactory();
+        return new CommandProcessor($machine ?? $this->createDefaultMachine());
+    }
 
-        return new CommandProcessor($machine ?? $factory->create(), $factory);
+    private function createDefaultMachine(): VendingMachine
+    {
+        return $this->machineWith([
+            $this->catalogEntry('WATER', 'Water', 65, 5),
+            $this->catalogEntry('JUICE', 'Juice', 100, 5),
+            $this->catalogEntry('SODA', 'Soda', 150, 5),
+        ]);
     }
 
     /**
